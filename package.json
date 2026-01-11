@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint && tsc --noEmit"
+    "lint": "eslint . --max-warnings=0 && tsc --noEmit"
   },
   "dependencies": {
     "@iconify/react": "5.2.1",
@@ -33,7 +33,7 @@
     "framer-motion": "^12.8.0",
     "jose": "^6.0.10",
     "jsonwebtoken": "^9.0.2",
-    "next": "15.3.0",
+    "next": "^16.1.1",
     "playwright": "^1.40.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -58,8 +58,8 @@
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.11",
     "concurrently": "^9.1.2",
-    "eslint": "^9",
-    "eslint-config-next": "15.3.0",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.1",
     "glob": "^11.0.3",
     "tailwindcss": "^4",
     "typescript": "^5"
