@@ -6,6 +6,7 @@ import { Icon } from '@iconify/react';
 import { motion } from 'framer-motion';
 import Navbar from '@/app/components/Navbar';
 import Footer from '@/app/components/Footer';
+import { useAuth } from 'cosmic-authentication';
 
 const AdBanner = ({ placement }: { placement: string }) => {
   const [ads, setAds] = React.useState([]);
@@ -75,6 +76,54 @@ const AdBanner = ({ placement }: { placement: string }) => {
 };
 
 const HomePage = () => {
+  const { signIn } = useAuth();
+  const [adminForm, setAdminForm] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    note: ''
+  });
+  const [adminLoading, setAdminLoading] = React.useState(false);
+  const [adminError, setAdminError] = React.useState('');
+  const [adminSuccess, setAdminSuccess] = React.useState('');
+
+  const handleAdminChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target;
+    setAdminForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleAdminSignup = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setAdminError('');
+    setAdminSuccess('');
+    setAdminLoading(true);
+
+    try {
+      const response = await fetch('/api/admin/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adminForm)
+      });
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setAdminError(data?.error || 'Unable to submit details.');
+        return;
+      }
+
+      if (data?.exists) {
+        setAdminSuccess('Admin record already exists. You can sign in now.');
+      } else {
+        setAdminSuccess('Admin record created. Now sign in to continue.');
+      }
+
+      setAdminForm({ name: '', email: '', phone: '', note: '' });
+    } catch (error) {
+      setAdminError('Unable to submit details right now.');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
   const services = [
     {
       icon: 'material-symbols:public',
@@ -223,6 +272,115 @@ const HomePage = () => {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Admin Access Section */}
+      <section className="py-16 bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            viewport={{ once: true }}
+            className="rounded-3xl border border-blue-100 bg-white/90 backdrop-blur-sm shadow-lg p-8 md:p-12"
+          >
+            <div className="grid gap-8 md:grid-cols-[1.1fr_0.9fr] items-start">
+              <div className="space-y-4">
+                <h2 className="text-2xl md:text-3xl font-light text-gray-900">
+                  <span>Admin Account Access</span>
+                </h2>
+                <p className="mt-2 text-gray-600 max-w-2xl">
+                  <span>Create or sign in to your admin account, then continue to the dashboard.</span>
+                </p>
+                <p className="mt-2 text-sm text-gray-500">
+                  <span>Admin access is granted to emails listed in ADMIN_EMAILS.</span>
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    document.cookie = `auth_return_url=${encodeURIComponent("/admin/dashboard")}; path=/; max-age=600`;
+                    signIn();
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full text-base font-medium transition-all duration-300 shadow-lg hover:shadow-xl"
+                >
+                  <span>Create Admin Account / Sign In</span>
+                </motion.button>
+              </div>
+              <form onSubmit={handleAdminSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    <span>Full name</span>
+                  </label>
+                  <input
+                    name="name"
+                    value={adminForm.name}
+                    onChange={handleAdminChange}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    placeholder="Jane Doe"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    <span>Email address</span>
+                  </label>
+                  <input
+                    name="email"
+                    type="email"
+                    value={adminForm.email}
+                    onChange={handleAdminChange}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    <span>Phone</span>
+                  </label>
+                  <input
+                    name="phone"
+                    value={adminForm.phone}
+                    onChange={handleAdminChange}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    placeholder="+1 555 123 4567"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    <span>Note</span>
+                  </label>
+                  <textarea
+                    name="note"
+                    value={adminForm.note}
+                    onChange={handleAdminChange}
+                    rows={3}
+                    className="w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    placeholder="Tell us about your role."
+                  />
+                </div>
+                {adminError && (
+                  <p className="text-sm text-red-600">
+                    <span>{adminError}</span>
+                  </p>
+                )}
+                {adminSuccess && (
+                  <p className="text-sm text-emerald-600">
+                    <span>{adminSuccess}</span>
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={adminLoading}
+                  className="w-full rounded-full bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition-colors duration-200 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <span>{adminLoading ? 'Submitting...' : 'Save Admin Details'}</span>
+                </button>
+              </form>
+            </div>
+          </motion.div>
         </div>
       </section>
 

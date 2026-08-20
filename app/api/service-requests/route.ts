@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'cosmic-authentication';
-import { isAdminEmail } from '@/lib/utils';
+import { isAdminUser } from '@/lib/admin';
 
 async function getDb() {
   const { db } = await import('cosmic-database');
@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   try {
     const db = await getDb();
     const user = await getServerSession();
-    if (!user || !isAdminEmail(user.email)) {
+    if (!user || !(await isAdminUser(user.email))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -87,7 +87,7 @@ export async function PUT(request: Request) {
   try {
     const db = await getDb();
     const user = await getServerSession();
-    if (!user || !isAdminEmail(user.email)) {
+    if (!user || !(await isAdminUser(user.email))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
@@ -115,7 +115,7 @@ export async function DELETE(request: Request) {
   try {
     const db = await getDb();
     const user = await getServerSession();
-    if (!user || !isAdminEmail(user.email)) {
+    if (!user || !(await isAdminUser(user.email))) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
